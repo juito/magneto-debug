@@ -1,99 +1,58 @@
 <?php
-class Magneto_Debug_Block_Config extends Magneto_Debug_Block_Abstract
+
+/**
+ * Class Sheep_Debug_Block_Config
+ *
+ * @category Sheep
+ * @package  Sheep_Debug
+ * @license  Copyright: Pirate Sheep, 2016
+ * @link     https://piratesheep.com
+ */
+class Sheep_Debug_Block_Config extends Sheep_Debug_Block_Panel
 {
-    static function xml2array($xml, &$arr, $parentKey=''){
-        if( !$xml )
-            return;
-
-        if( count($xml->children())==0 ){
-            $arr[$parentKey] = (string) $xml;
-        } else {
-            foreach( $xml->children() as $key => $item ){
-                $key = $parentKey ? $parentKey . DS . $key : $key;
-                self::xml2array($item, $arr, $key);
-            }
-        }
-    }
-
-    public function getToggleHintsUrl($forStore=null)
-    {
-        if (!$forStore) {
-            $forStore = Mage::app()->getStore()->getId();
-        }
-
-        return Mage::getUrl('debug/index/toggleTemplateHints', array(
-                'store' => $forStore,
-                '_store' => self::DEFAULT_STORE_ID,
-                '_nosid' => true));
-    }
-
-    public function getToggleTranslateHintsUrl($forStore=null)
-    {
-        if (!$forStore) {
-            $forStore = Mage::app()->getStore()->getId();
-        }
-
-        return Mage::getUrl('debug/index/toggleTranslateInline', array(
-            'store' => $forStore,
-            '_store' => self::DEFAULT_STORE_ID,
-            '_nosid' => true));
-    }
-
-    public function getDownloadConfigUrl()
-    {
-        return Mage::getUrl('debug/index/downloadConfig', array(
-            '_store' => self::DEFAULT_STORE_ID,
-            '_nosid' => true));
-    }
-
-    public function getDownloadConfigAsTextUrl()
-    {
-        return Mage::getUrl('debug/index/downloadConfigAsText', array(
-            '_store' => self::DEFAULT_STORE_ID,
-            '_nosid' => true));
-    }
-
-    public function getSearchConfigUrl()
-    {
-        return Mage::getUrl('debug/index/searchConfig', array(
-            '_store' => self::DEFAULT_STORE_ID,
-            '_nosid' => true));
-    }
-
-    public function hasFullPageCache()
-    {
-        return class_exists('Enterprise_PageCache_Model_Processor', false);
-    }
 
     /**
-     * FIXME: Find a better idea
-     * Currently not very useful because FPC is caching our block and status is displayed incorrectly.
+     * Returns version for Magento
      *
      * @return string
      */
-    public function getFullPacheDebugStatus()
+    public function getMagentoVersion()
     {
-        if ($this->hasFullPageCache()) {
-            return Mage::getStoreConfig(Enterprise_PageCache_Model_Processor::XML_PATH_CACHE_DEBUG) ? $this->__('Now: On') :
-                $this->__('Now: Off');
-        } else {
-            return '';
-        }
+        return Mage::helper('sheep_debug/config')->getMagentoVersion();
     }
 
-    public function getFullPageDebugUrl($forStore=null)
-    {
-        if (!$forStore) {
-            $forStore = Mage::app()->getStore()->getId();
-        }
 
-        return Mage::getUrl('debug/index/togglePageCacheDebug',
-                            array('store' => $forStore,
-                                 'query' => rand(0, 1000000), // To bypass fpc
-                                 '_store' => self::DEFAULT_STORE_ID,
-                                 '_nosid' => true
-                            )
-        );
+    /**
+     * Checks if Magento Developer Mode is enabled
+     *
+     * @return bool
+     */
+    public function isDeveloperMode()
+    {
+        return $this->helper->getIsDeveloperMode();
+    }
+
+
+    /**
+     * Returns an array with statuses for PHP extensions required by Magento
+     *
+     * @return array
+     */
+    public function getExtensionStatus()
+    {
+        return Mage::helper('sheep_debug/config')->getExtensionStatus();
+    }
+
+
+    /**
+     * Returns a string representation for current store (website name and store name)
+     *
+     * @return string
+     */
+    public function getCurrentStore()
+    {
+        $currentStore = $this->_getApp()->getStore();
+        return sprintf('%s / %s', $currentStore->getWebsite()->getName(),  $currentStore->getName());
     }
 
 }
